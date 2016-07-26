@@ -1,0 +1,84 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          fcgiauthredmine
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Apache mod_authnz_fcgi for Redmine.
+### END INIT INFO
+
+# === config ===
+# File path.
+path="/etc/apache2/fcgiauthredmine.pl"
+# PID file path.
+pid="/run/fcgiauthredmine.pid"
+# Number of process.
+proc=3
+# Port number.
+port=8989
+# Start args.
+args=(--dsn='DBI:mysql:database={YOUR_DB_NAME};host=localhost;mysql_socket=/run/mysqld/mysqld.sock' \
+--user='root' \
+--pass='123' \
+--mysql_auto_reconnect)
+
+# Advanced.
+kill_delay=1
+# ==============
+
+function start() {
+  if [ -f ${pid} ];then
+    return 1
+  fi
+  spawn-fcgi -p ${port} -F ${proc} -P ${pid} -- ${path} "${args[@]}" > /dev/null 2>&1
+}
+
+function stop() {
+  if [ ! -f ${pid} ];then
+    return 1
+  fi
+  # Termination.
+  kill -SIGTERM `cat ${pid}`
+  # Delay.
+  sleep ${kill_delay}
+  # Forced termination.
+  kill -0 `cat ${pid}` > /dev/null 2>&1
+  if [ $? = 0 ]; then
+    kill -SIGKILL `cat ${pid}`
+  fi
+  rm ${pid}
+}
+
+case "$1" in
+  start)
+    echo -n $"Starting fcgiauthredmine: "
+    start
+    echo
+    ;;
+  stop)
+    echo -n $"Stopping fcgiauthredmine: "
+    stop
+    echo
+    ;;
+  restart|try-restart)
+    echo -n $"Restarting fcgiauthredmine: "
+    if [ -f ${pid} ];then
+      stop
+      start
+    elif [ "$1" = "restart" ];then
+      start
+    fi
+    echo
+    ;;
+  reload|force-reload)
+    echo -n $"Reloading fcgiauthredmine: "
+    stop
+    start
+    echo
+    ;;
+  *)
+    echo "Arguments available: {start|stop|restart}"
+    ;;
+esac
+exit 0
