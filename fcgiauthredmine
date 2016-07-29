@@ -18,6 +18,8 @@ pid="/run/fcgiauthredmine.pid"
 proc=3
 # Port number.
 port=8989
+# Bind address.
+bind="127.0.0.1"
 # Start args.
 args=(--dsn='DBI:mysql:database={YOUR_DB_NAME};host=localhost;mysql_socket=/run/mysqld/mysqld.sock' \
 --user='root' \
@@ -32,7 +34,7 @@ function start() {
   if [ -f ${pid} ];then
     return 1
   fi
-  spawn-fcgi -p ${port} -F ${proc} -P ${pid} -- ${path} "${args[@]}" > /dev/null 2>&1
+  spawn-fcgi -p ${port} -a ${bind} -F ${proc} -P ${pid} -- ${path} "${args[@]}" > /dev/null 2>&1
 }
 
 function stop() {
