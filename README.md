@@ -36,6 +36,8 @@ pid="/run/fcgiauthredmine.pid"
 proc=3
 # Port number.
 port=8989
+# Bind address.
+bind="127.0.0.1"
 # Argument
 args=(--dsn='DBI:mysql:database=redmine;host=localhost;mysql_socket=/run/mysqld/mysqld.sock' \
 --user='root' \
